@@ -15,7 +15,10 @@ import com.coolweather.app.util.Utility;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
@@ -38,34 +41,26 @@ public class ChooseAreaActivity extends Activity {
 	private ArrayAdapter<String> adapter;
 	private CoolWeatherDB coolWeatherDB;
 	private List<String> dataList = new ArrayList<String>();
-	/**
-	 * 省列表
-	 */
-	private List<Province> provinceList;
-	/**
-	 * 市列表
-	 */
-	private List<City> cityList;
-	/**
-	 * 县列表
-	 */
-	private List<County> countyList;	
-	/**
-	 * 选中的省份
-	 */
-	private Province selectedProvince;
-	/**
-	 * 选中的城市
-	 */
-	private City selectedCity;
-	/**
-	 * 当前选中的级别
-	 */
-	private int currentLevel;
+
+	private List<Province> provinceList; //省列表
+	private List<City> cityList; //市列表
+	private List<County> countyList; //县列表	 
+	private Province selectedProvince; //选中的省份
+	private City selectedCity; //选中的城市
+	private int currentLevel; //当前选中的级别
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		if(prefs.getBoolean("city_selected", false)) {
+			Intent intent = new Intent(this, WeatherActivity.class);
+			startActivity(intent);
+			finish();
+			return;
+		}
+		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.choose_area);
 		
@@ -86,6 +81,12 @@ public class ChooseAreaActivity extends Activity {
 				} else if(currentLevel == LEVEL_CITY) {
 					selectedCity = cityList.get(index);
 					queryCounties();
+				} else if(currentLevel == LEVEL_COUNTY) {
+					String countyCode = countyList.get(index).getCountyCode();
+					Intent intent = new Intent(ChooseAreaActivity.this, WeatherActivity.class);
+					intent.putExtra("county_code", countyCode);
+					startActivity(intent);
+					finish();
 				}
 			}
 		});
